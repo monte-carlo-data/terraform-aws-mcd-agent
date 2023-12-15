@@ -91,7 +91,6 @@ resource "aws_s3_bucket_public_access_block" "mcd_agent_store_block_public_acces
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "mcd_agent_store_encryption" {
   bucket = aws_s3_bucket.mcd_agent_store.id
-
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
