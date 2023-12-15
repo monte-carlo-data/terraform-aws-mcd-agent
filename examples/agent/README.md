@@ -17,7 +17,7 @@ To provision this example and access (test) the agent locally:
 make exec profile=<AWS_PROFILE>
 ```
 
-Note that is convenience command auto-approves the plan, and executes a test request. To review
+Note that this convenience command auto-approves the plan, and executes a test request. To review
 interactively please use `terraform plan + apply` instead.
 
 See [here](https://github.com/monte-carlo-data/apollo-agent) for agent usage and docs. You should be able to use any
