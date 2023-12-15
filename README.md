@@ -1,6 +1,6 @@
 # Monte Carlo AWS Agent Module (Beta)
 
-This module deploys Monte Carlo's [containerized agent](https://hub.docker.com/r/montecarlodata/agent) (Beta) on AWS
+This module deploys Monte Carlo's [containerized agent](https://hub.docker.com/r/montecarlodata/agent)* (Beta) on AWS
 Lambda, along with storage, roles etc.
 
 See [here](https://docs.getmontecarlo.com/docs/platform-architecture) for architecture details and alternative
@@ -43,13 +43,13 @@ documentation.
 
 ## Inputs
 
-| **Name**          | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                            | **Type**     | **Default**                                           |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-------------------------------------------------------|
-| image             | URI of the Agent container image (ECR Repo). Note that the region is automatically derived from the region variable.                                                                                                                                                                                                                                                                                                                       | string       | 752656882040.dkr.ecr.*.amazonaws.com/mcd-agent:latest |
-| cloud_account_id  | Select the Monte Carlo account your collection service is hosted in. This can be found in the 'settings/integrations/collectors' tab on the UI or via the 'montecarlo collectors list' command on the CLI                                                                                                                                                                                                                                  | string       | 190812797848                                          |
-| private_subnets   | Optionally connect the agent to a VPC by specifying at least two private subnet IDs in that VPC.                                                                                                                                                                                                                                                                                                                                           | list(string) | []                                                    |
-| region            | The AWS region to deploy the agent into.                                                                                                                                                                                                                                                                                                                                                                                                   | string       | us-east-1                                             |
-| remote_upgradable | Allow the agent image and configuration to be remotely upgraded by Monte Carlo. Note that this sets a lifecycle to ignore any changes in Terraform to the image used after the initial deployment. If not set to 'true' you will be responsible for upgrading the image (e.g. specifying a new tag) for any bug fixes and improvements. Changing this value after initial deployment will replace your agent and require (re)registration. | bool         | true                                                  |
+| **Name**          | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                             | **Type**     | **Default**                                           |
+|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-------------------------------------------------------|
+| image             | URI of the Agent container image (ECR Repo). Note that the region is automatically derived from the region variable.                                                                                                                                                                                                                                                                                                                        | string       | 752656882040.dkr.ecr.*.amazonaws.com/mcd-agent:latest |
+| cloud_account_id  | Select the Monte Carlo account your collection service is hosted in. This can be found in the '[settings/integrations/collectors](https://getmontecarlo.com/settings/integrations/collectors)' tab on the UI or via the '[montecarlo collectors list](https://clidocs.getmontecarlo.com/#montecarlo-collectors-list)' command on the CLI                                                                                                    | string       | 190812797848                                          |
+| private_subnets   | Optionally connect the agent to a VPC by specifying at least two private subnet IDs in that VPC.                                                                                                                                                                                                                                                                                                                                            | list(string) | []                                                    |
+| region            | The AWS region to deploy the agent into.                                                                                                                                                                                                                                                                                                                                                                                                    | string       | us-east-1                                             |
+| remote_upgradable | Allow the agent image and configuration to be remotely upgraded by Monte Carlo. Note that this sets a lifecycle to ignore any changes in Terraform to the image used after the initial deployment. If not set to 'true' you will be responsible for upgrading the image (e.g. specifying a new tag) for any bug fixes and improvements. Changing this value after initial deployment might replace your agent and require (re)registration. | bool         | true                                                  |
 
 ## Outputs
 
@@ -78,9 +78,12 @@ details [here](https://developer.hashicorp.com/terraform/registry/modules/publis
 
 ## License
 
-See [LICENSE](https://github.com/monte-carlo-data/terraform-google-mcd-agent/blob/main/LICENSE) for more information.
+See [LICENSE](LICENSE) for more information.
 
 ## Security
 
-See [SECURITY](https://github.com/monte-carlo-data/terraform-google-mcd-agent/blob/main/SECURITY.md) for more
+See [SECURITY](SECURITY.md) for more
 information.
+---
+*Note that due to an AWS limitation the agent image is also uploaded and then sourced from AWS ECR when executed on
+Lambda.
