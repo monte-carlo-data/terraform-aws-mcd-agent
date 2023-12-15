@@ -30,6 +30,7 @@ locals {
     MCD_AGENT_IS_REMOTE_UPGRADABLE : var.remote_upgradable ? "True" : "False"
     MCD_AGENT_WRAPPER_TYPE : local.mcd_agent_deployment_type
     MCD_AGENT_WRAPPER_VERSION : local.mcd_wrapper_version
+    MCD_AGENT_CONNECTED_TO_A_VPC : local.connect_to_vpc ? "True" : "False"
     MCD_LOG_GROUP_ID : "arn:aws:logs:${var.region}:${local.account_id}:log-group:${aws_cloudwatch_log_group.mcd_agent_log_group.name}"
   }
 }
