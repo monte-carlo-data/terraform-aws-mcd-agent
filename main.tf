@@ -269,6 +269,25 @@ resource "aws_iam_role_policy" "mcd_agent_service_lambda_logs_policy" {
   role = aws_iam_role.mcd_agent_service_execution_role.id
 }
 
+resource "aws_iam_role_policy" "mcd_agent_service_lambda_stop_query_policy" {
+  name = "lambda_stop_query_policy"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "logs:StopQuery"
+        ],
+        "Resource" : [
+          "arn:aws:logs:${var.region}:${local.account_id}:log-group:*"
+        ],
+        "Effect" : "Allow"
+      }
+    ]
+  })
+  role = aws_iam_role.mcd_agent_service_execution_role.id
+}
+
 resource "aws_iam_role_policy" "mcd_agent_service_lambda_update_policy" {
   count = var.remote_upgradable ? 1 : 0
   name  = "lambda_update_policy"
@@ -281,13 +300,31 @@ resource "aws_iam_role_policy" "mcd_agent_service_lambda_update_policy" {
           "lambda:UpdateFunctionCode",
           "lambda:TagResource",
           "lambda:UntagResource",
-          "lambda:GetFunctionConfiguration",
-          "lambda:ListTags",
-          "lambda:GetFunction",
           "lambda:UpdateFunctionConfiguration",
           "lambda:DeleteFunction",
           "lambda:DeleteFunctionConcurrency",
           "lambda:PutFunctionConcurrency"
+        ],
+        "Resource" : [
+          "arn:aws:lambda:${var.region}:${local.account_id}:function:${local.mcd_agent_function_name}"
+        ],
+        "Effect" : "Allow"
+      }
+    ]
+  })
+  role = aws_iam_role.mcd_agent_service_execution_role.id
+}
+
+resource "aws_iam_role_policy" "mcd_agent_service_lambda_info_policy" {
+  name = "lambda_info_policy"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "lambda:GetFunctionConfiguration",
+          "lambda:ListTags",
+          "lambda:GetFunction"
         ],
         "Resource" : [
           "arn:aws:lambda:${var.region}:${local.account_id}:function:${local.mcd_agent_function_name}"
