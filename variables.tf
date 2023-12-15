@@ -42,7 +42,7 @@ variable "remote_upgradable" {
 
     If not set to 'true' you will be responsible for upgrading the image (e.g. specifying a new tag) for any bug fixes and improvements.
 
-    Changing this value after initial deployment will replace your agent and require (re)registration.
+    Changing this value after initial deployment might replace your agent and require (re)registration.
   EOF
   type        = bool
   default     = true
