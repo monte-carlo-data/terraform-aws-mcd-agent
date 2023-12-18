@@ -84,6 +84,7 @@ See [LICENSE](LICENSE) for more information.
 
 See [SECURITY](SECURITY.md) for more
 information.
+
 ---
 *Note that due to an AWS limitation the agent image is also uploaded and then sourced from AWS ECR when executed on
 Lambda.
