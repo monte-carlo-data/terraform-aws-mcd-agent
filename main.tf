@@ -417,4 +417,7 @@ resource "aws_iam_role" "mcd_agent_service_invocation_role" {
     })
   }
   name_prefix = "mcd_agent_service_invocation_role"
+  tags = {
+    MonteCarloData = ""
+  }
 }
