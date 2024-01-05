@@ -346,6 +346,30 @@ resource "aws_iam_role_policy" "mcd_agent_service_lambda_info_policy" {
   role = aws_iam_role.mcd_agent_service_execution_role.id
 }
 
+resource "aws_iam_role_policy" "mcd_agent_service_assume_role_policy" {
+  name = "assume_role_policy"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "sts:AssumeRole"
+        ],
+        "Condition" : {
+          "StringEquals" : {
+            "iam:ResourceTag/MonteCarloData" : ""
+          }
+        },
+        "Resource" : [
+          "*"
+        ],
+        "Effect" : "Allow"
+      }
+    ]
+  })
+  role = aws_iam_role.mcd_agent_service_execution_role.id
+}
+
 resource "aws_iam_role_policy" "mcd_agent_service_repo_policy" {
   count = var.remote_upgradable ? 1 : 0
   name  = "repo_access_policy"
