@@ -91,6 +91,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "mcd_agent_store_lifecycle" {
   }
 }
 
+resource "aws_s3_bucket_cors_configuration" "mcd_agent_store_cors" {
+  bucket = aws_s3_bucket.mcd_agent_store.id
+
+  cors_rule {
+    allowed_methods = ["GET"]
+    allowed_origins = ["https://*.getmontecarlo.com"]
+    allowed_headers = ["*"]
+    max_age_seconds = 3000
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "mcd_agent_store_block_public_access" {
   bucket                  = aws_s3_bucket.mcd_agent_store.id
   block_public_acls       = true
