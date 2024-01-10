@@ -96,7 +96,7 @@ resource "aws_s3_bucket_cors_configuration" "mcd_agent_store_cors" {
 
   cors_rule {
     allowed_methods = ["GET"]
-    allowed_origins = ["https://*.getmontecarlo.com"]
+    allowed_origins = ["https://getmontecarlo.com", "https://*.getmontecarlo.com"]
     allowed_headers = ["*"]
     max_age_seconds = 3000
   }
