@@ -1,6 +1,6 @@
 locals {
   # Wrapper metadata
-  mcd_wrapper_version       = "0.1.0"
+  mcd_wrapper_version       = "0.1.2"
   mcd_agent_platform        = "AWS"
   mcd_agent_service_name    = "REMOTE_AGENT"
   mcd_agent_deployment_type = "TERRAFORM"
@@ -20,7 +20,7 @@ locals {
   mcd_agent_function_image_uri     = replace(var.image, "*", var.region)
   mcd_agent_function_handler       = "apollo.interfaces.lambda_function.handler.lambda_handler"
   mcd_agent_function_memory        = 512
-  mcd_agent_function_concurrency   = 20
+  mcd_agent_function_concurrency   = 42
   mcd_agent_function_timeout       = 900
   mcd_agent_function_package_type  = "Image"
   mcd_agent_function_environment_config = {
