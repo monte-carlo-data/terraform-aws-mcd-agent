@@ -33,6 +33,12 @@ locals {
     MCD_AGENT_CONNECTED_TO_A_VPC : local.connect_to_vpc ? "true" : "false"
     MCD_LOG_GROUP_ID : "arn:aws:logs:${var.region}:${local.account_id}:log-group:${aws_cloudwatch_log_group.mcd_agent_log_group.name}"
   }
+  mc_tags = {
+    "mcd-agent-service-name"    = lower(local.mcd_agent_service_name)
+    "mcd-agent-deployment-type" = lower(local.mcd_agent_deployment_type)
+  }
+  tags_all = merge(local.mc_tags, var.tags)
+
 }
 
 resource "random_id" "mcd_agent_id" {
@@ -55,6 +61,7 @@ data "aws_partition" "current" {}
 
 resource "aws_s3_bucket" "mcd_agent_store" {
   bucket = local.mcd_agent_store_name
+  tags   = local.tags_all
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "mcd_agent_store_lifecycle" {
@@ -148,6 +155,7 @@ resource "aws_s3_bucket_policy" "mcd_agent_store_ssl_policy" {
 resource "aws_cloudwatch_log_group" "mcd_agent_log_group" {
   name              = "/aws/lambda/${local.mcd_agent_function_name}"
   retention_in_days = 14
+  tags              = local.tags_all
 }
 
 resource "aws_lambda_function" "mcd_agent_service" {
@@ -170,6 +178,7 @@ resource "aws_lambda_function" "mcd_agent_service" {
   package_type                   = local.mcd_agent_function_package_type
   reserved_concurrent_executions = local.mcd_agent_function_concurrency
   timeout                        = local.mcd_agent_function_timeout
+  tags                           = local.tags_all
   dynamic "vpc_config" {
     for_each = local.connect_to_vpc ? [1] : []
     content {
@@ -201,6 +210,7 @@ resource "aws_lambda_function" "mcd_agent_service_with_remote_upgrade_support" {
   package_type                   = local.mcd_agent_function_package_type
   reserved_concurrent_executions = local.mcd_agent_function_concurrency
   timeout                        = local.mcd_agent_function_timeout
+  tags                           = local.tags_all
   dynamic "vpc_config" {
     for_each = local.connect_to_vpc ? [1] : []
     content {
@@ -234,9 +244,7 @@ resource "aws_iam_role" "mcd_agent_service_execution_role" {
     local.connect_to_vpc ? "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole" : "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   ]
   name_prefix = "mcd_agent_service_execution_role"
-  tags = {
-    RoleSource = "monte-carlo-agent"
-  }
+  tags        = merge(local.tags_all, { RoleSource = "monte-carlo-agent" })
 }
 
 resource "aws_iam_role_policy" "mcd_agent_service_s3_policy" {
@@ -418,6 +426,7 @@ resource "aws_security_group" "mcd_agent_vpc_sg" {
   }
   name_prefix = "mcd_agent_vpc_sg"
   vpc_id      = data.aws_subnet.first_subnet[0].vpc_id
+  tags        = local.tags_all
 }
 
 ## ---------------------------------------------------------------------------------------------------------------------
@@ -462,7 +471,5 @@ resource "aws_iam_role" "mcd_agent_service_invocation_role" {
     })
   }
   name_prefix = "mcd_agent_service_invocation_role"
-  tags = {
-    MonteCarloData = ""
-  }
+  tags        = merge(local.tags_all, { MonteCarloData = "" })
 }
