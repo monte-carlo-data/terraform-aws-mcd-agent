@@ -1,7 +1,7 @@
 variable "image" {
   description = "URI of the Agent container image (ECR Repo). Note that the region is automatically derived from the region variable."
   type        = string
-  default     = "752656882040.dkr.ecr.*.amazonaws.com/mcd-agent:latest"
+  default     = "590183797493.dkr.ecr.*.amazonaws.com/mcd-agent:latest"
 }
 
 variable "cloud_account_id" {

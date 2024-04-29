@@ -21,8 +21,8 @@ resource "aws_vpc_endpoint" "s3" {
 module "apollo" {
   source = "../../"
 
-  cloud_account_id = "682816785079"
-  image            = "404798114945.dkr.ecr.*.amazonaws.com/mcd-pre-release-agent:latest"
+  cloud_account_id = "590183797493"
+  image            = "590183797493.dkr.ecr.*.amazonaws.com/mcd-agent:latest"
   region           = data.aws_region.current.name
   private_subnets  = module.vpc.private_subnets
 }
