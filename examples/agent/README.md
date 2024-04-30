@@ -1,9 +1,7 @@
 # Agent Sample
 
-This example deploys a pre-release Agent that is connected to a VPC. The VPC is created
+This example deploys an Agent that is connected to a VPC. The VPC is created
 with the help of [this](https://github.com/terraform-aws-modules/terraform-aws-vpc) module.
-
-Note that the pre-release agent is in active development and not intended for production usage.
 
 ## Prerequisites
 
