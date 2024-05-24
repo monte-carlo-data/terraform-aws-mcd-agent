@@ -1,6 +1,6 @@
 locals {
   # Wrapper metadata
-  mcd_wrapper_version       = "0.1.4"
+  mcd_wrapper_version       = "0.1.5"
   mcd_agent_platform        = "AWS"
   mcd_agent_service_name    = "REMOTE_AGENT"
   mcd_agent_deployment_type = "TERRAFORM"
@@ -9,6 +9,8 @@ locals {
   account_id     = data.aws_caller_identity.current.account_id
   partition_id   = data.aws_partition.current.id
   connect_to_vpc = length(var.private_subnets) >= 2 ? true : false
+  skip_cloud_account_policy = contains(["N/A", "590183797493"], var.cloud_account_id)
+  invocation_role_source_arns = local.skip_cloud_account_policy ? ["arn:aws:iam::590183797493:root"] : ["arn:aws:iam::${var.cloud_account_id}:root", "arn:aws:iam::590183797493:root"]
 
   # Data store properties
   mcd_agent_store_name        = "mcd-agent-store-${random_id.mcd_agent_id.hex}"
@@ -432,7 +434,7 @@ resource "aws_iam_role" "mcd_agent_service_invocation_role" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : "arn:aws:iam::${var.cloud_account_id}:root"
+          "AWS" : local.invocation_role_source_arns
         },
         "Action" : "sts:AssumeRole",
         "Condition" : {

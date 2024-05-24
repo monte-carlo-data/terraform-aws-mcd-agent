@@ -6,15 +6,13 @@ variable "image" {
 
 variable "cloud_account_id" {
   description = <<EOF
-    Select the Monte Carlo account your collection service is hosted in.
-
-    This can be found in the 'settings/integrations/collectors' tab on the UI or via the 'montecarlo collectors list' command on the CLI
+    [Deprecated] For updates use the previous value, for new deployments use N/A.
   EOF
   type        = string
   default     = "190812797848"
   validation {
-    condition     = contains(["190812797848", "799135046351", "682816785079", "637423407294", "590183797493"], var.cloud_account_id)
-    error_message = "Valid value is one of the following: 190812797848, 799135046351, 682816785079, 637423407294, 590183797493."
+    condition     = contains(["N/A", "190812797848", "799135046351", "682816785079", "637423407294", "590183797493"], var.cloud_account_id)
+    error_message = "Valid value is one of the following: N/A, 190812797848, 799135046351, 682816785079, 637423407294, 590183797493."
   }
 }
 
