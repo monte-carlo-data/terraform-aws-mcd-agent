@@ -9,7 +9,7 @@ locals {
   account_id                  = data.aws_caller_identity.current.account_id
   partition_id                = data.aws_partition.current.id
   connect_to_vpc              = length(var.private_subnets) >= 2 ? true : false
-  skip_cloud_account_policy   = contains(["N/A", "590183797493"], var.cloud_account_id)
+  skip_cloud_account_policy   = contains(["590183797493"], var.cloud_account_id)
   invocation_role_source_arns = local.skip_cloud_account_policy ? ["arn:aws:iam::590183797493:root"] : ["arn:aws:iam::${var.cloud_account_id}:root", "arn:aws:iam::590183797493:root"]
 
   # Data store properties
