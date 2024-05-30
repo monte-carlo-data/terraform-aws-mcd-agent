@@ -6,9 +6,10 @@ variable "image" {
 
 variable "cloud_account_id" {
   description = <<EOF
-    Select the Monte Carlo account your collection service is hosted in.
-
-    This can be found in the 'settings/integrations/collectors' tab on the UI or via the 'montecarlo collectors list' command on the CLI
+    The service that invokes the agent is being migrated to the AWS Account with ID: 590183797493.
+    For accounts created after April 24th, 2024 select 590183797493, for previously created
+    accounts select the Monte Carlo account your collection service is hosted in.
+    This can be found in the 'settings/integrations/collectors' tab on the UI or via the 'montecarlo collectors list' command on the CLI.
   EOF
   type        = string
   default     = "190812797848"
