@@ -1,6 +1,6 @@
-# Monte Carlo AWS Agent Module (Beta)
+# Monte Carlo AWS Agent Module
 
-This module deploys Monte Carlo's [containerized agent](https://hub.docker.com/r/montecarlodata/agent)* (Beta) on AWS
+This module deploys Monte Carlo's [containerized agent](https://hub.docker.com/r/montecarlodata/agent)* on AWS
 Lambda, along with storage, roles etc.
 
 See [here](https://docs.getmontecarlo.com/docs/platform-architecture) for architecture details and alternative
