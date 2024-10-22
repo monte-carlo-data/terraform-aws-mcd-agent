@@ -60,6 +60,7 @@ documentation.
 | mcd_agent_invoker_role_external_id | Assumable role External ID. To be used in registering. |
 | mcd_agent_security_group_name      | Security group ID.                                     |
 | mcd_agent_storage_bucket_arn       | Storage bucket ARN.                                    |
+| mcd_agent_execution_role           | The role the MCD agent will use to execute actions     |
 
 ## Releases and Development
 
