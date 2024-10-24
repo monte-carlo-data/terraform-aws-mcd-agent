@@ -22,3 +22,8 @@ output "mcd_agent_storage_bucket_arn" {
   value       = aws_s3_bucket.mcd_agent_store.arn
   description = "Storage bucket ARN."
 }
+
+output "mcd_agent_execution_role" {
+  value       = aws_iam_role.mcd_agent_service_execution_role
+  description = "The role the MCD agent will use to execute actions."
+}
