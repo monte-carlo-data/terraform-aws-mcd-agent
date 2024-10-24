@@ -24,6 +24,6 @@ output "mcd_agent_storage_bucket_arn" {
 }
 
 output "mcd_agent_execution_role" {
-  value = aws_iam_role.mcd_agent_service_execution_role
-  description = "The execution role for the in the customer account Lambda"
+  value       = aws_iam_role.mcd_agent_service_execution_role
+  description = "The role the MCD agent will use to execute actions."
 }
