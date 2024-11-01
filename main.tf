@@ -57,6 +57,7 @@ data "aws_partition" "current" {}
 
 resource "aws_s3_bucket" "mcd_agent_store" {
   bucket = local.mcd_agent_store_name
+  tags   = local.common_tags
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "mcd_agent_store_lifecycle" {
@@ -150,10 +151,12 @@ resource "aws_s3_bucket_policy" "mcd_agent_store_ssl_policy" {
 resource "aws_cloudwatch_log_group" "mcd_agent_log_group" {
   name              = "/aws/lambda/${local.mcd_agent_function_name}"
   retention_in_days = 14
+  tags              = local.common_tags
 }
 
 resource "aws_lambda_function" "mcd_agent_service" {
   count = var.remote_upgradable ? 0 : 1
+  tags  = local.common_tags
   depends_on = [
     aws_cloudwatch_log_group.mcd_agent_log_group
   ]
@@ -185,6 +188,7 @@ resource "aws_lambda_function" "mcd_agent_service" {
 # remote (agent sourced) image upgrades.
 resource "aws_lambda_function" "mcd_agent_service_with_remote_upgrade_support" {
   count = var.remote_upgradable ? 1 : 0
+  tags  = local.common_tags
   depends_on = [
     aws_cloudwatch_log_group.mcd_agent_log_group
   ]
@@ -236,9 +240,12 @@ resource "aws_iam_role" "mcd_agent_service_execution_role" {
     local.connect_to_vpc ? "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole" : "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   ]
   name_prefix = "mcd_agent_service_execution_role"
-  tags = {
-    RoleSource = "monte-carlo-agent"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      RoleSource = "monte-carlo-agent"
+    }
+  )
 }
 
 resource "aws_iam_role_policy" "mcd_agent_service_s3_policy" {
@@ -406,6 +413,7 @@ resource "aws_iam_role_policy" "mcd_agent_service_repo_policy" {
 
 resource "aws_security_group" "mcd_agent_vpc_sg" {
   count = local.connect_to_vpc ? 1 : 0
+  tags  = local.common_tags
   egress {
     from_port   = 0
     to_port     = 0
@@ -464,7 +472,10 @@ resource "aws_iam_role" "mcd_agent_service_invocation_role" {
     })
   }
   name_prefix = "mcd_agent_service_invocation_role"
-  tags = {
-    MonteCarloData = ""
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      MonteCarloData = ""
+    }
+  )
 }
