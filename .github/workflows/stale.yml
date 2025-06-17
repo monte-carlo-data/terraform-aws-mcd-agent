@@ -1,0 +1,25 @@
+# This workflow warns and then closes PRs that have had no activity for a specified amount of time.
+
+name: 'Close stale issues and PRs'
+
+on:
+  schedule:
+    # Run at 1:30 AM UTC daily
+    - cron: '30 1 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Mark/close stale issues and PRs
+        uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639  # v9.1.0
+        with:
+          stale-pr-message: >
+            This PR has been inactive for 30 days and will be automatically closed in 5 days from this warning.
+            Remove the stale label or update the PR to keep it open.
+          days-before-stale: 30
+          days-before-close: 5
+          days-before-issue-close: -1  # Never close issues automatically
