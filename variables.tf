@@ -12,10 +12,6 @@ variable "cloud_account_id" {
   EOF
   type        = string
   default     = "190812797848"
-  validation {
-    condition     = contains(["190812797848", "799135046351", "682816785079", "637423407294", "590183797493"], var.cloud_account_id)
-    error_message = "Valid value is one of the following: 190812797848, 799135046351, 682816785079, 637423407294, 590183797493."
-  }
 }
 
 variable "private_subnets" {
