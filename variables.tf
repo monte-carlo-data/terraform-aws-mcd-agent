@@ -10,6 +10,7 @@ variable "cloud_account_id" {
     will automatically be on the V2 platform or newer. If you are using an older version of the platform, please contact your Monte Carlo representative for the ID.
   EOF
   type        = string
+  default     = "190812797848"
 }
 
 variable "private_subnets" {
