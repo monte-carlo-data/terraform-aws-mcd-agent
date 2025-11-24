@@ -6,9 +6,8 @@ variable "image" {
 
 variable "cloud_account_id" {
   description = <<EOF
-    For deployments on the V2 Platform, use 590183797493. Accounts created after April 24th, 2024,
-    will automatically be on the V2 platform or newer. If you are using an older version of the platform,
-    please contact your Monte Carlo representative for the ID.
+    For deployments on the V2 Platform, use the Collection AWS account id in the Account information page. Accounts created after April 24th, 2024,
+    will automatically be on the V2 platform or newer. If you are using an older version of the platform, please contact your Monte Carlo representative for the ID.
   EOF
   type        = string
   default     = "190812797848"
