@@ -42,3 +42,9 @@ variable "remote_upgradable" {
   type        = bool
   default     = true
 }
+
+variable "create_s3_bucket_policy" {
+  description = "Whether to create the S3 bucket policy that enforces SSL/TLS for all connections to the bucket. Set to false if you are using a custom, external policy."
+  type        = bool
+  default     = true
+}
