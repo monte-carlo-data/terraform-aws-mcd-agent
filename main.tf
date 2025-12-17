@@ -122,6 +122,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "mcd_agent_store_e
 }
 
 resource "aws_s3_bucket_policy" "mcd_agent_store_ssl_policy" {
+  count  = var.create_s3_bucket_policy ? 1 : 0
   bucket = aws_s3_bucket.mcd_agent_store.id
   policy = jsonencode({
     "Version" : "2012-10-17",
