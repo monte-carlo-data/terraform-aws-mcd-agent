@@ -1,9 +1,9 @@
 provider "aws" {
   region = var.region
   default_tags {
-    tags = {
+    tags = merge({
       "mcd-agent-service-name"    = lower(local.mcd_agent_service_name)
       "mcd-agent-deployment-type" = lower(local.mcd_agent_deployment_type)
-    }
+    }, var.custom_default_tags)
   }
 }
