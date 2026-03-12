@@ -48,3 +48,9 @@ variable "create_s3_bucket_policy" {
   type        = bool
   default     = true
 }
+
+variable "custom_default_tags" {
+  description = "Default tags to apply to all resources. Variable is optional."
+  type        = map(string)
+  default     = {}
+}
