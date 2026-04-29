@@ -440,7 +440,7 @@ resource "aws_iam_role" "mcd_agent_service_invocation_role" {
         "Action" : "sts:AssumeRole",
         "Condition" : {
           "StringEquals" : {
-            "sts:ExternalId" : random_id.mcd_agent_id.hex
+            "sts:ExternalId" : var.external_id != "" ? var.external_id : random_id.mcd_agent_id.hex
           }
         }
       }

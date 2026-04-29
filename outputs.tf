@@ -9,7 +9,7 @@ output "mcd_agent_invoker_role_arn" {
 }
 
 output "mcd_agent_invoker_role_external_id" {
-  value       = random_id.mcd_agent_id.hex
+  value       = var.external_id != "" ? var.external_id : random_id.mcd_agent_id.hex
   description = "Assumable role External ID. To be used in registering."
 }
 
