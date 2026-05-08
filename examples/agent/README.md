@@ -7,6 +7,12 @@ with the help of [this](https://github.com/terraform-aws-modules/terraform-aws-v
 
 See the Prerequisites subsection in the module.
 
+Before running `terraform apply`, register a new deployment in Monte Carlo
+(Settings → Deployments → Add deployment) and copy the generated **External
+ID**. Replace the `REPLACE_WITH_MONTE_CARLO_EXTERNAL_ID` placeholder in
+[`main.tf`](./main.tf) with that value. The External ID pins the IAM trust
+policy to your specific deployment.
+
 ## Usage
 
 To provision this example and access (test) the agent locally:
