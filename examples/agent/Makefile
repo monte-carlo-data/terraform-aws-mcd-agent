@@ -1,11 +1,18 @@
-.PHONY: default apply test exec clean check-profile
+.PHONY: default apply test exec clean check-profile check-external-id
 
 default:
 	@echo "Read the readme"
 
-apply: check-profile
+apply: check-profile check-external-id
 	@# Apply this example.
 	terraform init && AWS_PROFILE=$(profile) terraform apply -auto-approve
+
+check-external-id:
+	@# Fail fast if the External ID placeholder hasn't been replaced.
+	@if grep -q "REPLACE_WITH_MONTE_CARLO_EXTERNAL_ID" main.tf; then \
+		echo "Replace external_id in main.tf with the value generated in Monte Carlo (Settings -> Deployments) before applying."; \
+		exit 1; \
+	fi
 
 test: check-profile
 	@# Test agent reachability via the health endpoint.
