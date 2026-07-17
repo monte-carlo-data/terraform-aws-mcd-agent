@@ -34,6 +34,7 @@ locals {
     MCD_AGENT_WRAPPER_VERSION : local.mcd_wrapper_version
     MCD_AGENT_CONNECTED_TO_A_VPC : local.connect_to_vpc ? "true" : "false"
     MCD_LOG_GROUP_ID : "arn:aws:logs:${var.region}:${local.account_id}:log-group:${aws_cloudwatch_log_group.mcd_agent_log_group.name}"
+    MCD_ADDITIONAL_ENV_VARS : jsonencode(var.additional_env_vars)
   }
 }
 
