@@ -5,7 +5,7 @@ module "vpc" {
 
   name               = "apollo-vpc"
   cidr               = "10.0.0.0/16"
-  azs                = formatlist("${data.aws_region.current.name}%s", ["a", "b"])
+  azs                = formatlist("${data.aws_region.current.region}%s", ["a", "b"])
   private_subnets    = ["10.0.0.0/24", "10.0.1.0/24"]
   public_subnets     = ["10.0.2.0/24", "10.0.3.0/24"]
   enable_nat_gateway = true
@@ -14,7 +14,7 @@ module "vpc" {
 
 resource "aws_vpc_endpoint" "s3" {
   vpc_id          = module.vpc.vpc_id
-  service_name    = "com.amazonaws.${data.aws_region.current.name}.s3"
+  service_name    = "com.amazonaws.${data.aws_region.current.region}.s3"
   route_table_ids = concat(module.vpc.private_route_table_ids, module.vpc.public_route_table_ids)
 }
 
@@ -23,7 +23,7 @@ module "apollo" {
 
   cloud_account_id = "590183797493"
   image            = "590183797493.dkr.ecr.*.amazonaws.com/mcd-agent:latest"
-  region           = data.aws_region.current.name
+  region           = data.aws_region.current.region
   private_subnets  = module.vpc.private_subnets
   # Required for new deployments. Generate the External ID in Monte Carlo
   # (Settings → Deployments → Add deployment) and replace the placeholder
