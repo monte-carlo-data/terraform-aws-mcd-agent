@@ -9,6 +9,7 @@ deployment options.
 ## Prerequisites
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) (>= 1.3)
+- [AWS provider](https://registry.terraform.io/providers/hashicorp/aws/latest) (>= 5.72, < 7.0)
 - [AWS CLI](https://aws.amazon.com/cli/).
   [Authentication reference](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration)
 
@@ -65,6 +66,18 @@ documentation.
 | mcd_agent_storage_bucket_arn       | Storage bucket ARN.                                    |
 | mcd_agent_storage_bucket_name      | Storage bucket name.                                   |
 | mcd_agent_execution_role           | The role the MCD agent will use to execute actions.    |
+
+## Upgrading
+
+### 1.1.0
+
+Replaces the IAM role arguments deprecated in AWS provider 6.x (and removed in 7.x) with standalone resources, and
+requires AWS provider `>= 5.72, < 7.0`. Upgrading an existing deployment is non-destructive: the plan adds four
+resources (`aws_iam_role_policy_attachment`, `aws_iam_role_policy`, and their `*_exclusive` counterparts) and
+destroys nothing. The roles are not replaced and keep their policies; no `moved` block or import is needed. As before,
+managed policies attached to the execution role and inline policies added to the invoker role outside this module
+are removed. The `mcd_agent_execution_role` output no longer includes the deprecated `inline_policy` and
+`managed_policy_arns` attributes.
 
 ## Releases and Development
 

@@ -29,6 +29,10 @@ output "mcd_agent_storage_bucket_name" {
 }
 
 output "mcd_agent_execution_role" {
-  value       = aws_iam_role.mcd_agent_service_execution_role
+  # Every role attribute except the deprecated inline_policy and managed_policy_arns (removed in AWS provider 7.x).
+  value = {
+    for k, v in aws_iam_role.mcd_agent_service_execution_role : k => v
+    if !contains(["inline_policy", "managed_policy_arns"], k)
+  }
   description = "The role the MCD agent will use to execute actions."
 }

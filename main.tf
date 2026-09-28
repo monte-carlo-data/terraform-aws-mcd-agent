@@ -1,13 +1,12 @@
 locals {
   # Wrapper metadata
-  mcd_wrapper_version       = "1.0.5"
+  mcd_wrapper_version       = "1.1.0"
   mcd_agent_platform        = "AWS"
   mcd_agent_service_name    = "REMOTE_AGENT"
   mcd_agent_deployment_type = "TERRAFORM"
 
   # Deployment properties
   account_id                  = data.aws_caller_identity.current.account_id
-  partition_id                = data.aws_partition.current.id
   connect_to_vpc              = length(var.private_subnets) >= 2 ? true : false
   skip_cloud_account_policy   = contains(["590183797493"], var.cloud_account_id)
   invocation_role_source_arns = local.skip_cloud_account_policy ? ["arn:aws:iam::590183797493:root"] : ["arn:aws:iam::${var.cloud_account_id}:root", "arn:aws:iam::590183797493:root"]
@@ -48,7 +47,6 @@ data "aws_subnet" "first_subnet" {
 }
 
 data "aws_caller_identity" "current" {}
-data "aws_partition" "current" {}
 
 ## ---------------------------------------------------------------------------------------------------------------------
 ## Agent Resources
@@ -157,7 +155,8 @@ resource "aws_cloudwatch_log_group" "mcd_agent_log_group" {
 resource "aws_lambda_function" "mcd_agent_service" {
   count = var.remote_upgradable ? 0 : 1
   depends_on = [
-    aws_cloudwatch_log_group.mcd_agent_log_group
+    aws_cloudwatch_log_group.mcd_agent_log_group,
+    aws_iam_role_policy_attachment.mcd_agent_service_execution_policy
   ]
   function_name = local.mcd_agent_function_name
   role          = aws_iam_role.mcd_agent_service_execution_role.arn
@@ -188,7 +187,8 @@ resource "aws_lambda_function" "mcd_agent_service" {
 resource "aws_lambda_function" "mcd_agent_service_with_remote_upgrade_support" {
   count = var.remote_upgradable ? 1 : 0
   depends_on = [
-    aws_cloudwatch_log_group.mcd_agent_log_group
+    aws_cloudwatch_log_group.mcd_agent_log_group,
+    aws_iam_role_policy_attachment.mcd_agent_service_execution_policy
   ]
   function_name = local.mcd_agent_function_name
   role          = aws_iam_role.mcd_agent_service_execution_role.arn
@@ -234,13 +234,22 @@ resource "aws_iam_role" "mcd_agent_service_execution_role" {
       }
     ]
   })
-  managed_policy_arns = [
-    local.connect_to_vpc ? "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole" : "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  ]
   name_prefix = "mcd_agent_service_execution_role"
   tags = {
     RoleSource = "monte-carlo-agent"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "mcd_agent_service_execution_policy" {
+  role       = aws_iam_role.mcd_agent_service_execution_role.name
+  policy_arn = local.connect_to_vpc ? "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole" : "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# Keeps the exclusive ownership of the role's managed policies that the deprecated managed_policy_arns argument
+# provided: any managed policy attached outside this module is detached.
+resource "aws_iam_role_policy_attachments_exclusive" "mcd_agent_service_execution_role" {
+  role_name   = aws_iam_role.mcd_agent_service_execution_role.name
+  policy_arns = [aws_iam_role_policy_attachment.mcd_agent_service_execution_policy.policy_arn]
 }
 
 resource "aws_iam_role_policy" "mcd_agent_service_s3_policy" {
@@ -447,26 +456,35 @@ resource "aws_iam_role" "mcd_agent_service_invocation_role" {
       }
     ]
   })
-  inline_policy {
-    name = "invoke_policy"
-    policy = jsonencode({
-      "Version" : "2012-10-17",
-      "Statement" : [
-        {
-          "Action" : [
-            "lambda:InvokeFunction"
-          ],
-          "Resource" : [
-            var.remote_upgradable ?
-            aws_lambda_function.mcd_agent_service_with_remote_upgrade_support[0].arn : aws_lambda_function.mcd_agent_service[0].arn
-          ],
-          "Effect" : "Allow"
-        }
-      ]
-    })
-  }
   name_prefix = "mcd_agent_service_invocation_role"
   tags = {
     MonteCarloData = ""
   }
+}
+
+resource "aws_iam_role_policy" "mcd_agent_service_invoke_policy" {
+  name = "invoke_policy"
+  role = aws_iam_role.mcd_agent_service_invocation_role.id
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "lambda:InvokeFunction"
+        ],
+        "Resource" : [
+          var.remote_upgradable ?
+          aws_lambda_function.mcd_agent_service_with_remote_upgrade_support[0].arn : aws_lambda_function.mcd_agent_service[0].arn
+        ],
+        "Effect" : "Allow"
+      }
+    ]
+  })
+}
+
+# Keeps the exclusive ownership of the role's inline policies that the deprecated inline_policy block provided: any
+# inline policy added outside this module is removed.
+resource "aws_iam_role_policies_exclusive" "mcd_agent_service_invocation_role" {
+  role_name    = aws_iam_role.mcd_agent_service_invocation_role.name
+  policy_names = [aws_iam_role_policy.mcd_agent_service_invoke_policy.name]
 }
