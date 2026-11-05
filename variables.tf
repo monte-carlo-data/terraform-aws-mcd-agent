@@ -68,7 +68,7 @@ variable "external_id" {
 }
 
 variable "invocation_source_vpce_ids" {
-  description = "Optionally restrict agent invocation to these VPC endpoint IDs (aws:SourceVpce). Use the Agent VPC endpoint ID from the Monte Carlo Account information page. Leave empty to allow invocation from any source."
+  description = "Optionally restrict agent invocation to these VPC endpoint IDs (aws:SourceVpce). Use the Agent VPC endpoint ID listed for the agent's region on the Monte Carlo Account information page. Leave empty to allow invocation from any source."
   type        = list(string)
   default     = []
   validation {
