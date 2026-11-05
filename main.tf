@@ -1,6 +1,6 @@
 locals {
   # Wrapper metadata
-  mcd_wrapper_version       = "1.0.5"
+  mcd_wrapper_version       = "1.0.8"
   mcd_agent_platform        = "AWS"
   mcd_agent_service_name    = "REMOTE_AGENT"
   mcd_agent_deployment_type = "TERRAFORM"
@@ -452,16 +452,25 @@ resource "aws_iam_role" "mcd_agent_service_invocation_role" {
     policy = jsonencode({
       "Version" : "2012-10-17",
       "Statement" : [
-        {
-          "Action" : [
-            "lambda:InvokeFunction"
-          ],
-          "Resource" : [
-            var.remote_upgradable ?
-            aws_lambda_function.mcd_agent_service_with_remote_upgrade_support[0].arn : aws_lambda_function.mcd_agent_service[0].arn
-          ],
-          "Effect" : "Allow"
-        }
+        merge(
+          {
+            "Action" : [
+              "lambda:InvokeFunction"
+            ],
+            "Resource" : [
+              var.remote_upgradable ?
+              aws_lambda_function.mcd_agent_service_with_remote_upgrade_support[0].arn : aws_lambda_function.mcd_agent_service[0].arn
+            ],
+            "Effect" : "Allow"
+          },
+          length(var.invocation_source_vpce_ids) > 0 ? {
+            "Condition" : {
+              "StringEquals" : {
+                "aws:SourceVpce" : var.invocation_source_vpce_ids
+              }
+            }
+          } : {}
+        )
       ]
     })
   }
