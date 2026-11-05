@@ -12,6 +12,9 @@ jobs:
       - run:
           name: Format and validate
           command: make sanity-check
+      - run:
+          name: Module tests
+          command: make test
 
 workflows:
   version: 2

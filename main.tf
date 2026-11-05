@@ -9,12 +9,15 @@ locals {
   account_id                  = data.aws_caller_identity.current.account_id
   partition_id                = data.aws_partition.current.id
   connect_to_vpc              = length(var.private_subnets) >= 2 ? true : false
+  create_security_group       = local.connect_to_vpc && length(var.security_group_ids) == 0
+  agent_security_group_ids    = local.create_security_group ? [aws_security_group.mcd_agent_vpc_sg[0].id] : var.security_group_ids
   skip_cloud_account_policy   = contains(["590183797493"], var.cloud_account_id)
   invocation_role_source_arns = local.skip_cloud_account_policy ? ["arn:aws:iam::590183797493:root"] : ["arn:aws:iam::${var.cloud_account_id}:root", "arn:aws:iam::590183797493:root"]
 
   # Data store properties
   mcd_agent_store_name        = "mcd-agent-store-${random_id.mcd_agent_id.hex}"
   mcd_agent_store_data_prefix = "mcd/"
+  use_s3_kms_key              = var.s3_kms_key_arn != ""
 
   # Lambda properties
   mcd_agent_function_name          = "mcd-agent-service-${random_id.mcd_agent_id.hex}"
@@ -67,6 +70,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "mcd_agent_store_lifecycle" {
     expiration {
       days = 90
     }
+    dynamic "noncurrent_version_expiration" {
+      for_each = var.s3_versioning_enabled ? [1] : []
+      content {
+        noncurrent_days = 90
+      }
+    }
     filter {
       prefix = local.mcd_agent_store_data_prefix
     }
@@ -76,6 +85,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "mcd_agent_store_lifecycle" {
     id = "${local.mcd_agent_store_name}-tmp-expiration"
     expiration {
       days = 2
+    }
+    dynamic "noncurrent_version_expiration" {
+      for_each = var.s3_versioning_enabled ? [1] : []
+      content {
+        noncurrent_days = 2
+      }
     }
     filter {
       prefix = "${local.mcd_agent_store_data_prefix}tmp"
@@ -87,9 +102,38 @@ resource "aws_s3_bucket_lifecycle_configuration" "mcd_agent_store_lifecycle" {
     expiration {
       days = 1
     }
+    dynamic "noncurrent_version_expiration" {
+      for_each = var.s3_versioning_enabled ? [1] : []
+      content {
+        noncurrent_days = 1
+      }
+    }
     filter {
       prefix = "${local.mcd_agent_store_data_prefix}responses"
     }
+    status = "Enabled"
+  }
+  # With versioning, expiring a current object leaves a delete marker; remove it once no versions remain.
+  dynamic "rule" {
+    for_each = var.s3_versioning_enabled ? [1] : []
+    content {
+      id = "${local.mcd_agent_store_name}-delete-marker-expiration"
+      expiration {
+        expired_object_delete_marker = true
+      }
+      filter {
+        prefix = local.mcd_agent_store_data_prefix
+      }
+      status = "Enabled"
+    }
+  }
+  depends_on = [aws_s3_bucket_versioning.mcd_agent_store_versioning]
+}
+
+resource "aws_s3_bucket_versioning" "mcd_agent_store_versioning" {
+  count  = var.s3_versioning_enabled ? 1 : 0
+  bucket = aws_s3_bucket.mcd_agent_store.id
+  versioning_configuration {
     status = "Enabled"
   }
 }
@@ -117,8 +161,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "mcd_agent_store_e
   bucket = aws_s3_bucket.mcd_agent_store.id
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm     = local.use_s3_kms_key ? "aws:kms" : "AES256"
+      kms_master_key_id = local.use_s3_kms_key ? var.s3_kms_key_arn : null
     }
+    bucket_key_enabled = local.use_s3_kms_key ? true : null
   }
 }
 
@@ -177,7 +223,7 @@ resource "aws_lambda_function" "mcd_agent_service" {
   dynamic "vpc_config" {
     for_each = local.connect_to_vpc ? [1] : []
     content {
-      security_group_ids = [aws_security_group.mcd_agent_vpc_sg[0].id]
+      security_group_ids = local.agent_security_group_ids
       subnet_ids         = var.private_subnets
     }
   }
@@ -208,7 +254,7 @@ resource "aws_lambda_function" "mcd_agent_service_with_remote_upgrade_support" {
   dynamic "vpc_config" {
     for_each = local.connect_to_vpc ? [1] : []
     content {
-      security_group_ids = [aws_security_group.mcd_agent_vpc_sg[0].id]
+      security_group_ids = local.agent_security_group_ids
       subnet_ids         = var.private_subnets
     }
   }
@@ -261,6 +307,27 @@ resource "aws_iam_role_policy" "mcd_agent_service_s3_policy" {
         "Resource" : [
           aws_s3_bucket.mcd_agent_store.arn,
           "${aws_s3_bucket.mcd_agent_store.arn}/*"
+        ],
+        "Effect" : "Allow"
+      }
+    ]
+  })
+  role = aws_iam_role.mcd_agent_service_execution_role.id
+}
+
+resource "aws_iam_role_policy" "mcd_agent_service_s3_kms_policy" {
+  count = local.use_s3_kms_key ? 1 : 0
+  name  = "s3_kms_policy"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "kms:GenerateDataKey",
+          "kms:Decrypt"
+        ],
+        "Resource" : [
+          var.s3_kms_key_arn
         ],
         "Effect" : "Allow"
       }
@@ -407,7 +474,7 @@ resource "aws_iam_role_policy" "mcd_agent_service_repo_policy" {
 }
 
 resource "aws_security_group" "mcd_agent_vpc_sg" {
-  count = local.connect_to_vpc ? 1 : 0
+  count = local.create_security_group ? 1 : 0
   egress {
     from_port   = 0
     to_port     = 0
