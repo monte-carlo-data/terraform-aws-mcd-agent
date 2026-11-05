@@ -66,3 +66,14 @@ variable "external_id" {
   type        = string
   default     = ""
 }
+
+variable "invocation_source_vpce_ids" {
+  description = "Optionally restrict agent invocation to these VPC endpoint IDs (aws:SourceVpce). Use the Agent VPC endpoint ID listed for the agent's region on the Monte Carlo Account information page. Leave empty to allow invocation from any source."
+  type        = list(string)
+  default     = []
+  nullable    = false
+  validation {
+    condition     = alltrue([for id in var.invocation_source_vpce_ids : can(regex("^vpce-[0-9a-f]+$", id))])
+    error_message = "Each entry must be a VPC endpoint ID such as vpce-0123456789abcdef0."
+  }
+}
