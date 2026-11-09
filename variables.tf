@@ -1,5 +1,5 @@
 variable "image" {
-  description = "URI of the Agent container image (ECR Repo). Note that the region is automatically derived from the region variable."
+  description = "URI of the Agent container image (ECR Repo). Note that the region is automatically derived from the region variable. To pin an exact image, reference it by digest (e.g. mcd-agent@sha256:...) and set remote_upgradable to false."
   type        = string
   default     = "590183797493.dkr.ecr.*.amazonaws.com/mcd-agent:latest"
 }
@@ -76,4 +76,33 @@ variable "invocation_source_vpce_ids" {
     condition     = alltrue([for id in var.invocation_source_vpce_ids : can(regex("^vpce-[0-9a-f]+$", id))])
     error_message = "Each entry must be a VPC endpoint ID such as vpce-0123456789abcdef0."
   }
+}
+
+variable "security_group_ids" {
+  description = <<EOF
+    Optionally attach your own security groups to the agent instead of the one created by this module. Only used when
+    private_subnets is set. Use this to restrict egress, e.g. to VPC endpoints and the specific data sources the agent
+    connects to. The module-created security group allows all outbound traffic; it is still created, but not attached.
+  EOF
+  type        = list(string)
+  default     = []
+  nullable    = false
+}
+
+variable "s3_kms_key_arn" {
+  description = <<EOF
+    Optionally encrypt the agent storage bucket with this customer managed KMS key (SSE-KMS) instead of Amazon S3
+    managed keys (SSE-S3). The agent execution role is granted kms:GenerateDataKey and kms:Decrypt on the key; the key
+    policy must allow this account's IAM principals to use it.
+  EOF
+  type        = string
+  default     = ""
+  nullable    = false
+}
+
+variable "s3_versioning_enabled" {
+  description = "Enable versioning on the agent storage bucket. Noncurrent versions expire on the same schedule as current objects."
+  type        = bool
+  default     = false
+  nullable    = false
 }
