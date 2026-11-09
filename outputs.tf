@@ -14,8 +14,8 @@ output "mcd_agent_invoker_role_external_id" {
 }
 
 output "mcd_agent_security_group_name" {
-  value       = local.create_security_group ? aws_security_group.mcd_agent_vpc_sg[0].name : null
-  description = "Name of the security group created by this module. Null when not connected to a VPC or when security_group_ids is set."
+  value       = local.connect_to_vpc ? aws_security_group.mcd_agent_vpc_sg[0].name : null
+  description = "Name of the security group created by this module. Null when not connected to a VPC. Not attached to the agent when security_group_ids is set."
 }
 
 output "mcd_agent_storage_bucket_arn" {

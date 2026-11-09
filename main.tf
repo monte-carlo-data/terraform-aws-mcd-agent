@@ -6,11 +6,12 @@ locals {
   mcd_agent_deployment_type = "TERRAFORM"
 
   # Deployment properties
-  account_id                  = data.aws_caller_identity.current.account_id
-  partition_id                = data.aws_partition.current.id
-  connect_to_vpc              = length(var.private_subnets) >= 2 ? true : false
-  create_security_group       = local.connect_to_vpc && length(var.security_group_ids) == 0
-  agent_security_group_ids    = local.create_security_group ? [aws_security_group.mcd_agent_vpc_sg[0].id] : var.security_group_ids
+  account_id     = data.aws_caller_identity.current.account_id
+  partition_id   = data.aws_partition.current.id
+  connect_to_vpc = length(var.private_subnets) >= 2 ? true : false
+  # The module SG is created whenever the agent is in a VPC, even if unused: removing it while the Lambda's ENIs still
+  # use it blocks the apply that switches an existing agent to caller-provided security groups.
+  agent_security_group_ids    = length(var.security_group_ids) > 0 ? var.security_group_ids : aws_security_group.mcd_agent_vpc_sg[*].id
   skip_cloud_account_policy   = contains(["590183797493"], var.cloud_account_id)
   invocation_role_source_arns = local.skip_cloud_account_policy ? ["arn:aws:iam::590183797493:root"] : ["arn:aws:iam::${var.cloud_account_id}:root", "arn:aws:iam::590183797493:root"]
 
@@ -166,6 +167,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "mcd_agent_store_e
     }
     bucket_key_enabled = local.use_s3_kms_key ? true : null
   }
+  # Grant the agent the key before the bucket starts using it, so writes never fail mid-apply.
+  depends_on = [aws_iam_role_policy.mcd_agent_service_s3_kms_policy]
 }
 
 resource "aws_s3_bucket_policy" "mcd_agent_store_ssl_policy" {
@@ -474,7 +477,7 @@ resource "aws_iam_role_policy" "mcd_agent_service_repo_policy" {
 }
 
 resource "aws_security_group" "mcd_agent_vpc_sg" {
-  count = local.create_security_group ? 1 : 0
+  count = local.connect_to_vpc ? 1 : 0
   egress {
     from_port   = 0
     to_port     = 0

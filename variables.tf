@@ -82,7 +82,7 @@ variable "security_group_ids" {
   description = <<EOF
     Optionally attach your own security groups to the agent instead of the one created by this module. Only used when
     private_subnets is set. Use this to restrict egress, e.g. to VPC endpoints and the specific data sources the agent
-    connects to. The module-created security group allows all outbound traffic.
+    connects to. The module-created security group allows all outbound traffic; it is still created, but not attached.
   EOF
   type        = list(string)
   default     = []

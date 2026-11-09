@@ -133,15 +133,11 @@ run "vpc_with_own_security_groups" {
   }
 
   assert {
-    condition     = length(aws_security_group.mcd_agent_vpc_sg) == 0
-    error_message = "Module must not create a security group when one is provided."
+    condition     = length(aws_security_group.mcd_agent_vpc_sg) == 1
+    error_message = "Module security group must still exist, so switching an existing agent never deletes it while in use."
   }
   assert {
     condition     = one(aws_lambda_function.mcd_agent_service_with_remote_upgrade_support[0].vpc_config).security_group_ids == toset(["sg-restricted-egress"])
-    error_message = "Agent must use the provided security groups."
-  }
-  assert {
-    condition     = output.mcd_agent_security_group_name == null
-    error_message = "Output must be null when no module security group exists."
+    error_message = "Agent must use only the provided security groups."
   }
 }

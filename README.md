@@ -65,7 +65,7 @@ documentation.
 | mcd_agent_function_arn             | Agent Function ARN. To be used in registering.         |
 | mcd_agent_invoker_role_arn         | Assumable role ARN. To be used in registering.         |
 | mcd_agent_invoker_role_external_id | Assumable role External ID. To be used in registering. |
-| mcd_agent_security_group_name      | Name of the security group created by this module. Null when not connected to a VPC or when `security_group_ids` is set. |
+| mcd_agent_security_group_name      | Name of the security group created by this module. Null when not connected to a VPC. Not attached to the agent when `security_group_ids` is set. |
 | mcd_agent_storage_bucket_arn       | Storage bucket ARN.                                    |
 | mcd_agent_storage_bucket_name      | Storage bucket name.                                   |
 | mcd_agent_execution_role           | The role the MCD agent will use to execute actions.    |
