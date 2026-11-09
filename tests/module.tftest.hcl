@@ -48,8 +48,8 @@ run "defaults_are_unchanged" {
     error_message = "Versioning must be off by default."
   }
   assert {
-    condition     = length(aws_iam_role_policy.mcd_agent_service_s3_kms_policy) == 0
-    error_message = "No KMS policy without a key."
+    condition     = length(jsondecode(aws_iam_role_policy.mcd_agent_service_s3_policy.policy).Statement) == 1
+    error_message = "No KMS statement without a key."
   }
   assert {
     condition     = length(aws_s3_bucket_lifecycle_configuration.mcd_agent_store_lifecycle.rule) == 3
@@ -86,7 +86,7 @@ run "kms_and_versioning" {
     error_message = "S3 bucket keys should be enabled with SSE-KMS."
   }
   assert {
-    condition     = jsondecode(aws_iam_role_policy.mcd_agent_service_s3_kms_policy[0].policy).Statement[0].Resource == [var.s3_kms_key_arn]
+    condition     = jsondecode(aws_iam_role_policy.mcd_agent_service_s3_policy.policy).Statement[1].Resource == [var.s3_kms_key_arn]
     error_message = "Execution role must be granted the key."
   }
   assert {

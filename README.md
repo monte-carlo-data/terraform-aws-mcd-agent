@@ -56,7 +56,7 @@ documentation.
 | invocation_source_vpce_ids | Optionally restrict agent invocation to these VPC endpoint IDs (aws:SourceVpce). Use the Agent VPC endpoint ID listed for the agent's region on the Monte Carlo Account information page. Leave empty to allow invocation from any source. | list(string) | [] |
 | security_group_ids | Optionally attach your own security groups to the agent instead of the one created by this module. Only used when `private_subnets` is set. Use this to restrict egress, e.g. to VPC endpoints and the specific data sources the agent connects to. The module-created security group allows all outbound traffic. | list(string) | [] |
 | s3_kms_key_arn | Optionally encrypt the agent storage bucket with this customer managed KMS key (SSE-KMS) instead of Amazon S3 managed keys (SSE-S3). The agent execution role is granted `kms:GenerateDataKey` and `kms:Decrypt` on the key; the key policy must allow this account's IAM principals to use it. | string | "" |
-| s3_versioning_enabled | Enable versioning on the agent storage bucket. Noncurrent versions expire on the same schedule as current objects. | bool | false |
+| s3_versioning_enabled | Enable versioning on the agent storage bucket. Noncurrent versions expire on the same schedule as current objects. To destroy the agent, first delete all object versions in the bucket. | bool | false |
 
 ## Outputs
 

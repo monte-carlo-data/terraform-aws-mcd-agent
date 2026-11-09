@@ -101,7 +101,7 @@ variable "s3_kms_key_arn" {
 }
 
 variable "s3_versioning_enabled" {
-  description = "Enable versioning on the agent storage bucket. Noncurrent versions expire on the same schedule as current objects."
+  description = "Enable versioning on the agent storage bucket. Noncurrent versions expire on the same schedule as current objects. To destroy the agent, first delete all object versions in the bucket."
   type        = bool
   default     = false
   nullable    = false
