@@ -67,6 +67,17 @@ variable "external_id" {
   default     = ""
 }
 
+variable "invocation_source_vpce_ids" {
+  description = "Optionally restrict agent invocation to these VPC endpoint IDs (aws:SourceVpce). Use the Agent VPC endpoint ID listed for the agent's region on the Monte Carlo Account information page. Leave empty to allow invocation from any source."
+  type        = list(string)
+  default     = []
+  nullable    = false
+  validation {
+    condition     = alltrue([for id in var.invocation_source_vpce_ids : can(regex("^vpce-[0-9a-f]+$", id))])
+    error_message = "Each entry must be a VPC endpoint ID such as vpce-0123456789abcdef0."
+  }
+}
+
 variable "security_group_ids" {
   description = <<EOF
     Optionally attach your own security groups to the agent instead of the one created by this module. Only used when
@@ -75,6 +86,7 @@ variable "security_group_ids" {
   EOF
   type        = list(string)
   default     = []
+  nullable    = false
 }
 
 variable "s3_kms_key_arn" {
@@ -85,10 +97,12 @@ variable "s3_kms_key_arn" {
   EOF
   type        = string
   default     = ""
+  nullable    = false
 }
 
 variable "s3_versioning_enabled" {
   description = "Enable versioning on the agent storage bucket. Noncurrent versions expire on the same schedule as current objects."
   type        = bool
   default     = false
+  nullable    = false
 }
