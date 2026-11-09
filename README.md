@@ -97,7 +97,9 @@ CircleCI will sanity check formatting and for valid tf config files. Run `make t
 It is also recommended you use Terraform Cloud as a backend.
 Otherwise, as normal, please follow Monte Carlo's code guidelines during development and review.
 
-When ready to release simply add a new version tag, e.g. v0.0.42, and push that tag to GitHub.
+When ready to release, set `mcd_wrapper_version` in `main.tf` to the version being released (it is reported to
+Monte Carlo as `MCD_AGENT_WRAPPER_VERSION` and is not bumped automatically), then add the matching version tag, e.g.
+v0.0.42, and push that tag to GitHub.
 See additional
 details [here](https://developer.hashicorp.com/terraform/registry/modules/publish#releasing-new-versions).
 
