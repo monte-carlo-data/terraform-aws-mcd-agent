@@ -1,6 +1,6 @@
 locals {
   # Wrapper metadata
-  mcd_wrapper_version       = "1.0.9"
+  mcd_wrapper_version       = "1.0.10"
   mcd_agent_platform        = "AWS"
   mcd_agent_service_name    = "REMOTE_AGENT"
   mcd_agent_deployment_type = "TERRAFORM"
@@ -168,7 +168,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "mcd_agent_store_e
     bucket_key_enabled = local.use_s3_kms_key ? true : null
   }
   # Grant the agent the key before the bucket starts using it, so writes never fail mid-apply.
-  depends_on = [aws_iam_role_policy.mcd_agent_service_s3_kms_policy]
+  depends_on = [aws_iam_role_policy.mcd_agent_service_s3_policy]
 }
 
 resource "aws_s3_bucket_policy" "mcd_agent_store_ssl_policy" {
@@ -296,7 +296,9 @@ resource "aws_iam_role_policy" "mcd_agent_service_s3_policy" {
   name = "s3_policy"
   policy = jsonencode({
     "Version" : "2012-10-17",
-    "Statement" : [
+    # The KMS statement is conditional on the statement list, not a counted resource: the key ARN is often unknown at
+    # plan time (key created in the same apply), which a count cannot depend on.
+    "Statement" : concat([
       {
         "Action" : [
           "s3:PutObject",
@@ -313,17 +315,7 @@ resource "aws_iam_role_policy" "mcd_agent_service_s3_policy" {
         ],
         "Effect" : "Allow"
       }
-    ]
-  })
-  role = aws_iam_role.mcd_agent_service_execution_role.id
-}
-
-resource "aws_iam_role_policy" "mcd_agent_service_s3_kms_policy" {
-  count = local.use_s3_kms_key ? 1 : 0
-  name  = "s3_kms_policy"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
+      ], local.use_s3_kms_key ? [
       {
         "Action" : [
           "kms:GenerateDataKey",
@@ -334,10 +326,11 @@ resource "aws_iam_role_policy" "mcd_agent_service_s3_kms_policy" {
         ],
         "Effect" : "Allow"
       }
-    ]
+    ] : [])
   })
   role = aws_iam_role.mcd_agent_service_execution_role.id
 }
+
 
 resource "aws_iam_role_policy" "mcd_agent_service_lambda_logs_policy" {
   name = "lambda_logs_policy"
